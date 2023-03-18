@@ -1,0 +1,198 @@
+<!--------------------------------------------------------------------->
+<!-- spinner shared global -->
+<!--------------------------------------------------------------------->
+<div class="relative self-center">
+    <app-loadingspinner *ngIf="!(businessIsFetched$ | async)" [message]="loadingMessage"></app-loadingspinner>
+</div>
+
+
+<!--------------------------------------------------------------------->
+<!-- Use select tag with objects -->    
+<!--------------------------------------------------------------------->
+[in html file]--------------------
+<select [(ngModel)]="classProperty" (ngModelChange)="dataChanged($event)" name="data">
+    <option *ngFor="let currentData of allData" [ngValue]="currentData"> {{data.name}} </option>
+</select>
+    --- or -----
+<select formControlName='role' value="drole" (ngModelChange)="dataChanged($event)" [class.g_validateInput]="depotForm.touched && drole.invalid"
+    class="g_validateInput mt-1 w-full px-3 py-1 text-sm border border-gray-300 rounded-lg outline-none focus:ring-1  shadow-sm ">
+    <option [ngValue]="null" disabled selected> -- Choisir un type -- </option>
+    <option *ngFor="let wrole of this.wareHouseRole_list" [ngValue]="wrole.value">{{wrole.label | titlecase}}</option>
+</select>
+
+[in ts file ]-----------------
+dataChanged(newObj) { // get the object as parameter }
+
+
+
+<!--------------------------------------------------------------------->
+<!-- observable to wait for any action completion -->
+<!--------------------------------------------------------------------->
+private waiter = new BehaviorSubject<boolean>(false); // same as new ReplaySubject<boolean>(1);
+waiter$ = this.waiter.asObservable();
+<!-- when need to set it to true,  -->
+this.waiter.next(true);
+
+
+
+<!--------------------------------------------------------------------->
+<!-- solve the issue "NG0100: ExpressionChangedAfterItHasBeenCheckedError" -->
+<!--------------------------------------------------------------------->
+[ts file]---------------
+ngAfterContentChecked(): void { this.changeDetector.detectChanges(); } //
+
+
+
+<!--------------------------------------------------------------------->
+<!-- ANGULAR ROUTING : USAGE OF PATH MATCH : [FULL/PREFIX] -->
+<!--------------------------------------------------------------------->
+Use this line ONLY when we want to make a redirection
+pathMatch: "full", redirectTo: "stock-client"
+
+
+
+<!--------------------------------------------------------------------->
+<!-- ERROR : There is no FormControl instance attached to form control element with name: -->
+<!--------------------------------------------------------------------->
+When this doesn't work  >>>>>>  formControlName="xxxxxxx"  
+USE this                >>>>>>  [formControl]="updateAffaireForm.controls['xxxxx']"
+
+
+
+<!--------------------------------------------------------------------->
+<!-- how to use efficiently ng-multiselect-dorpdown -->
+<!--------------------------------------------------------------------->
+https://www.npmjs.com/package/ng-multiselect-dropdown
+
+[in html file]-----------
+!!! NOTE !!! : bind the [settings] BEFORE [data] forit to work properly
+example: (cf add-affaire.component.html)
+
+
+
+<!--------------------------------------------------------------------->
+<!-- BEST PRACTICE : using observables to get url params, when navigating to/from same component -->
+<!--------------------------------------------------------------------->
+[ inside ngOnInit() ] ------------
+this.activatedRoute.paramMap.subscribe(
+    (urlParams: ParamMap) => {
+        this.id = parseInt(urlParams.get('id'));
+        this.serialNumber = urlParams.get('serialNumber');
+    }
+)
+
+<!--------------------------------------------------------------------->
+<!-- how subjects WORK -->
+<!--------------------------------------------------------------------->
+link: https://www.techgeeknext.com/angular/angular-rxjs-subject
+
+
+
+
+<!--------------------------------------------------------------------->
+<!-- manual handling pagination -->
+<!--------------------------------------------------------------------->
+[in html]-----
+<table mat-table [dataSource]="dataSource" matSort>
+</table>
+<mat-paginator (page)="handlePagination($event)" #paginatorPageSize [pageSizeOptions]="pageSizes" showFirstLastButtons></mat-paginator>
+
+[in ts file]------------
+handlePagination(e: EventEmitter<PageEvent>) {
+    console.log("e: EventEmitter<PageEvent> :", e);
+    // handle pagination here
+}
+
+
+<!--------------------------------------------------------------------->
+<!--  Reactive form : "Validator" personnalisé-->
+<!--------------------------------------------------------------------->
+https://guide-angular.wishtack.io/angular/formulaires/reactive-forms/validation
+
+
+
+<!--------------------------------------------------------------------->
+<!-- auto refresh observable data esaily    -->
+<!--------------------------------------------------------------------->
+https://www.youtube.com/watch?v=mo323v1xpS4
+
+
+<!--------------------------------------------------------------------->
+<!--  Multiple paginators & sort inside same component -->
+<!--------------------------------------------------------------------->
+
+[in ts file]------------
+@ViewChild('paginatorServices') paginator: MatPaginator;
+@ViewChild('deptSort') sort: MatSort;
+
+[in html]-----
+<table mat-table [dataSource]="dataSource" #deptSort="matSort" matSort class="mat-elevation-z3">
+<mat-paginator #paginatorServices="matPaginator"></mat-paginator>
+
+
+<!--------------------------------------------------------------------->
+<!-- AUTO LOGOUT manual way to implement it -->
+<!--------------------------------------------------------------------->
+https://www.youtube.com/watch?v=V7RnmhjxTsc&list=TLPQMTAwMjIwMjOdgqckT0c1ww&index=3
+
+
+<!--------------------------------------------------------------------->
+<!-- AUTO LOGOUT when user is inactive : using an npm package -->
+<!--------------------------------------------------------------------->
+https://www.youtube.com/watch?v=ICqygdusqBs
+
+
+<!--------------------------------------------------------------------->
+<!-- MEMORIZE URL WE WANTED TO ACCESS TO BEFORE LOGOUT  -->
+<!--------------------------------------------------------------------->
+https://www.youtube.com/watch?v=0KwoRynFu6g&list=TLPQMTAwMjIwMjOdgqckT0c1ww&index=4
+
+
+
+<!--------------------------------------------------------------------->
+<!-- Deep copy an Object and preserve its Type in TypeScript  -->
+<!--------------------------------------------------------------------->
+
+const obj = {
+    person: {
+        name: { first: 'Bobby', last: 'Hadz',},
+        address: { country: 'Chile', city: 'Santiago' },
+    },
+};
+  
+const copy = JSON.parse(JSON.stringify(obj)) as typeof obj;
+
+
+<!--------------------------------------------------------------------->
+<!-- search how pipes WORK, for easy data filteriing -->
+<!--------------------------------------------------------------------->
+[routerLinkActiveOptions]="{ exact: true }"
+DESC : marks the link as active when the user navigates to it BUT NOT WHEN NAVIGATING TO ANY OF THE CHILD ROUTES.
+
+
+<!------------------------------------------------------------------------------->
+<!-- keep track of all data-bound properties changes made in parent component  -->
+<!------------------------------------------------------------------------------->
+@Input() prop
+
+/** Use ONLY in a Parent/Child relation: It's a data-bound properties tracker.
+* Called when any data-bound property of a directive changes from parent component.
+* called immediately after at least one data-bound property has changed, and before the children's view and content are checked.
+* it means, THE CHILD'S VIEW & CONTENT will be updated with the changes.
+* @param changes The changed properties.
+* */
+ngOnChanges(changes: SimpleChanges){
+    const new_propValue = changes['prop'] // contains the old and the new value of the 'prop' property...
+    /* do some other actions if needed */
+}
+
+<!--------------------------------------------------------------------->
+<!-- sticky side nav using js and css  -->
+<!--------------------------------------------------------------------->
+https://www.w3schools.com/howto/howto_js_navbar_sticky.asp
+
+
+
+<!--------------------------------------------------------------------->
+<!-- search how pipes WORK, for easy data filteriing -->
+<!--------------------------------------------------------------------->
