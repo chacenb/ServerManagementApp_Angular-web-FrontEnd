@@ -10,6 +10,9 @@ import { FilterByStatusPipe } from './pipes/filterServerByStatus/filter-by-statu
   ],
   imports: [
     CommonModule
-  ]
+  ],
+  exports: [
+    FilterByStatusPipe
+  ],
 })
 export class SharedModule { }
