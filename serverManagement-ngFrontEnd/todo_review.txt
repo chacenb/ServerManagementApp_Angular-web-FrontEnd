@@ -1,1 +1,5 @@
 Stopped at 01:08:30
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+He filtered using observable in the apiService
+I'm going to be using a custom Pipe for that

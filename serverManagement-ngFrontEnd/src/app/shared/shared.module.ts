@@ -1,10 +1,13 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FilterByStatusPipe } from './pipes/filterServerByStatus/filter-by-status.pipe';
 
 
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    FilterByStatusPipe
+  ],
   imports: [
     CommonModule
   ]
