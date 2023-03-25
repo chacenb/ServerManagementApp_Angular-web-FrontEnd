@@ -194,5 +194,32 @@ https://www.w3schools.com/howto/howto_js_navbar_sticky.asp
 
 
 <!--------------------------------------------------------------------->
-<!-- search how pipes WORK, for easy data filteriing -->
+<!-- create and log an interval counter to console -->
 <!--------------------------------------------------------------------->
+import {interval} from rxjs
+data$ = interval(1000);
+this.data$.sunscribe((data)=>console.log('data', data);)
+
+
+<!--------------------------------------------------------------------->
+<!-- Avoid Memory Leaks : async Pipe Vs unsubscribe -->
+<!--------------------------------------------------------------------->
+https://youtu.be/XCE1PqNg4vg?list=TLPQMTkwMzIwMjONdh82ruuZWQ
+https://youtu.be/ev1yE0SYs9Y?list=TLPQMTkwMzIwMjONdh82ruuZWQ
+https://youtu.be/wDAmfqnIrck?list=TLPQMTkwMzIwMjONdh82ruuZWQ
+-----------
+
+export class xxxxx implements OnInit, OnDestroy{
+
+    import {interval, Subscription} from rxjs
+    data$ = interval(1000);
+    dataSubscription: SUbscription | undefined;
+    
+    ngOnInit() {
+        this.dataSubscription = this.data$.sunscribe((data)=>console.log('data', data);)
+    }
+
+    ngOnDestroy(){
+        this.dataSubscription?.unsubscribe();
+    }
+}

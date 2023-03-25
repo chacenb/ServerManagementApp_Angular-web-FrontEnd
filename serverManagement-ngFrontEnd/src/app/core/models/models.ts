@@ -29,6 +29,7 @@ export interface CustomResponse {
     developperMessage: string,
     data: { servers?: ServerData[], server?: ServerData } // we can have either xx or xxx in 'data' Property
 }
+
 // export interface ServerListWsResult extends ServerResponse { data: Server[] }
 // export interface ServerWsResult extends ServerResponse { data: Server }
 

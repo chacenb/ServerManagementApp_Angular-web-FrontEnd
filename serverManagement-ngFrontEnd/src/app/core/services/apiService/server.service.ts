@@ -1,7 +1,8 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { stat } from 'fs';
-import { catchError, Observable, tap, throwError } from 'rxjs';
+// import { stat } from 'fs';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap, retry } from 'rxjs/operators';
 import * as mod from '../../models/models';
 
 @Injectable({
@@ -40,29 +41,50 @@ export class ServerService {
   );
 
   delete_server$ = (id: number) => this.http.delete<mod.CustomResponse>(`${this.apiUrl}/delete/${id}`).pipe(
-    tap((data) => { console.log('[API] > delete_server > tap :'); }),
+    tap((data) => { console.log('[API] > delete_server > tap :', data); }),
     catchError(this.handleError)
   );
 
-  filter_by_status$ = (status: mod.Status, response: mod.CustomResponse) => new Observable<mod.CustomResponse>(
-    subscriber => {
-      console.log('[API] > filter_by_status$ > response :', response);
+
+  /**
+   * method to filter servers and return an Observ. of the filtered servers
+   * @param status status by whixh the user wants to filter the servers
+   * @param response Data to filter
+   * @returns an observable of filtered servers
+  */
+  filter_by_status$ = (status: mod.Status, response: mod.CustomResponse): Observable<mod.CustomResponse> => new Observable<mod.CustomResponse>(
+
+    /*  Observables should define a subscriber function that is executed when a consumer calls the subscribe() method. 
+     * The subscriber function defines how to obtain/generate values to be published to the consumer.*/
+    (subscriber) => {
+
+      console.log('[API] > filter_by_status$ > response to filter :', response);
+
+      // in this case, this Observavle synchronously delivers filtered servers, then complete
       subscriber.next(
-        /* Obj1 = {a: "A1", b: "B1"} >> spread & override properties >> Obj2 = {...Obj1, a: "A2"}; */
         status === mod.Status.ALL ?
           { ...response, message: `servers filtered by ${status} status` } :
           {
             ...response,
-            message: response.data.servers.filter(server => (server.status === status)).length < 0 ?
+            message: response?.data?.servers.filter(server => (server?.status === status))?.length < 0 ?
               `No server of status ${status === mod.Status.SERVER_DOWN ? 'SERVER DOWN' : 'SERVER UP'} found` :
               `servers filtered by ${status === mod.Status.SERVER_DOWN ? 'SERVER DOWN' : 'SERVER UP'} status`,
-            data: { servers: response.data.servers.filter(server => server.status === status), }
+            data: { servers: response?.data?.servers.filter(server => server.status === status), }
           }
       );
+
+      /* if errors during execution of subscriber function */
+      subscriber.error('Error occured when filtering data');
+
+      /* complete the execution */
       subscriber.complete();
+
+      /* return is called when unsubscribe the observable
+       function doesn't need to do anything in this case, cause values are delivered synchronously */
+      return { unsubscribe() { } };
     }
   ).pipe(
-    tap((data) => { console.log('[API] > filter_by_status > tap :'); }),
+    tap((data) => { console.log('[API] > filter_by_status > tap :', data); }),
     catchError(this.handleError)
   );
 
@@ -99,6 +121,8 @@ export class ServerService {
   //     })
   //   );
   // }
-
-
 }
+
+
+
+
