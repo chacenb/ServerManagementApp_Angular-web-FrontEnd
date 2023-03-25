@@ -18,7 +18,10 @@ export class FeaturesComponent implements OnInit {
 
   ngOnInit(): void {
 
-    /* building the application state Observable to be used */
+    /*  REACTIVE APPROCH 
+    - building the application state Observable in the .ts file
+    - subscribing inside the .html file using the async pipe
+     */
     this.appState$ = this.serverService.get_all_servers$.pipe(
       map((response) => {
         /* build an object of type AppState<CustomResponse> to return*/
