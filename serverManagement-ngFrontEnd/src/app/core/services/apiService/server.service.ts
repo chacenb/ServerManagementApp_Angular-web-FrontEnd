@@ -88,9 +88,10 @@ export class ServerService {
     catchError(this.handleError)
   );
 
+  /* the error handler func just rethrows the error to get caller  */
   private handleError(err: HttpErrorResponse): Observable<never> {
-    console.log(err);
-    return throwError(() => new Error(`[API] > ERROR : ${err.status}`));
+    console.error(`[API] > error`, err);
+    return throwError(() => err);
   }
 
 
