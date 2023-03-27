@@ -1,5 +1,196 @@
-<h1>ServerManagement App > Features Module Works!</h1>
-<hr>
-<div>
-    {{appState$ | async | json}}
+<!-- <div> {{appState$ | async | json}}</div> -->
+<!-- <h1>ServerManagement App > Features Module Works!</h1> -->
+<!-- <hr> -->
+
+<!-- <div class="pageContent text-center border">
+    <div class="card">
+        <div class="card-header">
+            Featured
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Special title treatment</h5>
+            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+        </div>
+    </div>
+</div> -->
+
+<div class="row mt-5">
+    <div class="card col-md-9 mx-auto ">
+        <div class="card-header hh">
+            <div>
+                <h5>Server management</h5>
+            </div>
+
+            <!-- top btns -->
+            <div class="btnSpacing">
+                <div>
+                    <select class="form-select" aria-label="Default select example">
+                        <option selected>ALL</option>
+                        <option value="1">SERVER_UP</option>
+                        <option value="3">SERVER_DOWN</option>
+                    </select>
+                </div>
+
+                <button type="button" class="btn btn-primary ml-2" data-bs-toggle="modal"
+                    data-bs-target="#addNewServerModal"><i class="fa-solid fa-plus"></i>
+                    &nbsp;New server
+                </button>
+
+                <!-- <div class="dropdown">
+                    <a class="btn btn-secondary dropdown-toggle dropdown-toggle-split" href="#" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Dropdown link
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" selected>ALL</a></li>
+                        <li><a class="dropdown-item" href="#">SERVER_UP</a></li>
+                        <li><a class="dropdown-item" href="#">SERVER_DOWN</a></li>
+                    </ul>
+                </div> -->
+
+                <button type="button" class="btn btn-warning ml-2">Print report</button>
+            </div>
+        </div>
+        <div class="card-body text-center mt-3">
+            <!-- global container -->
+            <ng-container *ngIf="(appState$ | async) as appState" [ngSwitch]="appState.dataState">
+
+                <!-- loading state container -->
+                <ng-container *ngSwitchCase="dataStates.LOADING_STATE">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <!-- loaded state container -->
+                <ng-container *ngSwitchCase="dataStates.LOADED_STATE">
+
+                    <!-- {{appState.appData.data.servers | json}} -->
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Id</th>
+                                <th scope="col">Image</th>
+                                <th scope="col">Ip Address</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Memory</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Ping</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let server of appState.appData.data.servers; let i = index">
+                                <th scope="row">#{{server.id}} </th>
+                                <td> <img [src]="server.imageUrl" [alt]="server.name" width="30" height="30"> </td>
+                                <td>{{server.ipAddress}}</td>
+                                <td>{{server.name}}</td>
+                                <td>{{server.memory}}</td>
+                                <td>{{server.type}}</td>
+                                <td>
+                                    <span class="badge"
+                                        [ngClass]="[server.status == Statuses.SERVER_DOWN ? 'bg-danger': 'bg-success ']">
+                                        {{(server.status===Statuses.SERVER_DOWN)?'SERVER DOWN': 'SERVER UP'}}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a *ngIf="(pinging$ | async) !== server.id" href="javascript:void(0)"
+                                        (click)="pingServer(server.id)"><i class="fa-solid fa-satellite-dish"></i></a>
+                                    <div *ngIf="(pinging$ | async) == server.id" class="spinner-grow" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </td>
+                                <td><i class="fa-solid fa-trash text-danger"></i></td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </ng-container>
+
+                <!-- error state container -->
+                <ng-container *ngSwitchCase="dataStates.ERROR_STATE">
+                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                        <i class="fa-solid fa-triangle-exclamation"></i> &nbsp; &nbsp;
+                        <div>
+                            {{appState.error}}
+                        </div>
+                    </div>
+                </ng-container>
+
+                <!-- other state container -->
+                <ng-container *ngSwitchDefault>STATE UNKNOWN</ng-container>
+
+
+            </ng-container>
+
+        </div>
+    </div>
+    <!-- <div class="borderR">
+        <h3>Me Too!</h3>
+    </div> -->
 </div>
+
+
+
+<!-- Modal for adding new servers -->
+<div class="modal fade" id="addNewServerModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                new server form here
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="addNewServer()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- 
+
+
+<button type="button" class="btn btn-link">Link</button>
+
+<div class="container mt-5 mx-auto">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">First</th>
+                <th scope="col">Last</th>
+                <th scope="col">Handle</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row">1</th>
+                <td>Mark</td>
+                <td>Otto</td>
+                <td>@mdo</td>
+            </tr>
+            <tr>
+                <th scope="row">2</th>
+                <td>Jacob</td>
+                <td>Thornton</td>
+                <td>@fat</td>
+            </tr>
+            <tr>
+                <th scope="row">3</th>
+                <td colspan="2">Larry the Bird</td>
+                <td>@twitter</td>
+            </tr>
+        </tbody>
+    </table>
+</div> -->

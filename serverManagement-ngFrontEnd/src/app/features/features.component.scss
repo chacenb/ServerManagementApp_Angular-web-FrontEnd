@@ -1,0 +1,22 @@
+.pageContent {
+    max-width: 70%;
+    min-height: 100vh;
+    padding: auto;
+
+}
+
+.borderR {
+    border: 3px solid red;
+
+}
+
+.hh {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btnSpacing {
+    display: flex;
+    gap: 1rem;
+}
