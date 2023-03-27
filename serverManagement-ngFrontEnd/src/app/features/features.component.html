@@ -95,9 +95,9 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a *ngIf="(pinging$ | async) !== server.id" href="javascript:"
-                                        (click)="pingServer(server.id)"><i class="fa-solid fa-satellite-dish"></i></a>
-                                    <div *ngIf="(pinging$ | async) == server.id" class="spinner-grow" role="status">
+                                    <a *ngIf="(pinging$ | async) !== server.ipAddress" href="javascript:"
+                                        (click)="pingServer(server.ipAddress)"><i class="fa-solid fa-satellite-dish"></i></a>
+                                    <div *ngIf="(pinging$ | async) == server.ipAddress" class="spinner-grow" role="status">
                                         <span class="visually-hidden">Loading...</span>
                                     </div>
                                 </td>

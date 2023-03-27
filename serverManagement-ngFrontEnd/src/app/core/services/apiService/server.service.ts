@@ -15,7 +15,7 @@ export class ServerService {
     private http: HttpClient,
   ) { }
 
-  get_all_servers$ =  this.http.get<mod.CustomResponse>(`${this.apiUrl}/list`).pipe(
+  get_all_servers$ = () => this.http.get<mod.CustomResponse>(`${this.apiUrl}/list`).pipe(
     retry(3),
     tap((data) => { console.log('[API] > get_all_servers > tap :', data); }),
     catchError(this.handleError)

@@ -16,8 +16,9 @@ export class FeaturesComponent implements OnInit {
   readonly dataStates = mod.DataState;
   readonly Statuses = mod.Status;
 
-  private pinging_ = new BehaviorSubject<number>(-1); // same as new ReplaySubject<boolean>(1);
-  pinging$ = this.pinging_.asObservable();
+  private localDataSubj = new BehaviorSubject<mod.CustomResponse>(null); // same as new ReplaySubject<boolean>(1);
+  private pingingSubj = new BehaviorSubject<string>('-1'); // same as new ReplaySubject<boolean>(1);
+  pinging$ = this.pingingSubj.asObservable();
 
   pinging: boolean = false;
   pingedServer: number = -1
@@ -37,16 +38,16 @@ export class FeaturesComponent implements OnInit {
     ------------------------------------
     NOTE : return Objs of each pipe operator SHOULD BE OF SAME TYPE AS appState$
     */
-    this.appState$ = this.serverService.get_all_servers$.pipe(
+    this.appState$ = this.serverService.get_all_servers$().pipe(
 
       map((response) => {
+        /* save the response locally for future updates */
+        this.localDataSubj.next(response);
+
         /* build an object of type AppState<CustomResponse> to return*/
         const tempAppState: mod.AppState<mod.CustomResponse> = { dataState: mod.DataState.LOADED_STATE, appData: response };
         return tempAppState;
       }),
-
-      /* delay the return of the response */
-      // delay(2000),
 
       /* set initial value while waiting for the http request to complete and provide us w/ the response */
       startWith({ dataState: mod.DataState.LOADING_STATE }),
@@ -62,10 +63,44 @@ export class FeaturesComponent implements OnInit {
   }
 
 
-  pingServer(id: number) {
-    this.pinging_.next(id);
-    setTimeout(() => { this.pinging_.next(-1); }, 2000);
+  pingServer(ipAddress: string) {
+    /* start spinner using behaviour subject */
+    this.start_PingSpinner(ipAddress);
+
+    this.appState$ = this.serverService.ping_server$(ipAddress).pipe(
+      map((response) => {
+
+        /* from our local data previously saved, find the index of the server we are pinging ...*/
+        const indexOfCurrServer = this.localDataSubj.value.data.servers.findIndex(server => server.id == response.data.server.id);
+
+        /* replace that server in the local array (localDataSubj) w/ the server returned by backend ping method */
+        this.localDataSubj.value.data.servers[indexOfCurrServer] = response.data.server
+
+        /* stop the spinner */
+        this.stop_PingSpinner();
+
+        /* return the updated localDataSubj */
+        return { dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value };
+      }),
+
+      /* set initial value while waiting for the http request to complete and provide us w/ the response */
+      startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
+
+      /* handle the error  */
+      catchError((error: HttpErrorResponse) => {
+        this.stop_PingSpinner();
+        return of({ dataState: mod.DataState.ERROR_STATE, error: `${error.name} : ${error.message}` });
+      }),
+
+    );
+
+
+
   }
+
+  start_PingSpinner = (ipAddress: string) => this.pingingSubj.next(ipAddress);
+  stop_PingSpinner = () => this.pingingSubj.next('-1');
+
 
   addNewServer() {
     console.log('ADDING new server');
