@@ -15,22 +15,26 @@ export class ServerService {
     private http: HttpClient,
   ) { }
 
-  get_all_servers$ = this.http.get<mod.CustomResponse>(`${this.apiUrl}/list`).pipe(
+  get_all_servers$ =  this.http.get<mod.CustomResponse>(`${this.apiUrl}/list`).pipe(
+    retry(3),
     tap((data) => { console.log('[API] > get_all_servers > tap :', data); }),
     catchError(this.handleError)
   );
 
   get_server_by_id$ = (id: number) => this.http.get<mod.CustomResponse>(`${this.apiUrl}/get/${id}`).pipe(
+    retry(3),
     tap((data) => { console.log('[API] > get_server_by_id > tap :', data); }),
     catchError(this.handleError)
   );
 
   get_server_image$ = (imgName: string) => this.http.get<any>(`${this.apiUrl}/image/${imgName}`).pipe(
+    retry(3),
     tap((data) => { console.log('[API] > get_server_image > tap :', data); }),
     catchError(this.handleError)
   );
 
   ping_server$ = (ipAddress: string) => this.http.get<mod.CustomResponse>(`${this.apiUrl}/ping/${ipAddress}`).pipe(
+    retry(3),
     tap((data) => { console.log('[API] > ping_server > tap :'); }),
     catchError(this.handleError)
   );

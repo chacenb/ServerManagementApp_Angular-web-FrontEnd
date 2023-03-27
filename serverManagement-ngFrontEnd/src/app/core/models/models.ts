@@ -1,3 +1,10 @@
+export interface Alert {
+    type?: string,
+    message?: string
+  }
+  
+
+
 /* ******************* ENUMS *********************** */
 export enum DataState {
     LOADING_STATE = "LOADING_STATE",

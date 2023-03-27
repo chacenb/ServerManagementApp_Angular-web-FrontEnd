@@ -1,19 +1,5 @@
-<!-- <div> {{appState$ | async | json}}</div> -->
-<!-- <h1>ServerManagement App > Features Module Works!</h1> -->
-<!-- <hr> -->
 
-<!-- <div class="pageContent text-center border">
-    <div class="card">
-        <div class="card-header">
-            Featured
-        </div>
-        <div class="card-body">
-            <h5 class="card-title">Special title treatment</h5>
-            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-        </div>
-    </div>
-</div> -->
+<app-alert></app-alert>
 
 <div class="row mt-5">
     <div class="card col-md-9 mx-auto ">
@@ -51,6 +37,16 @@
                 </div> -->
 
                 <button type="button" class="btn btn-warning ml-2">Print report</button>
+
+                <div id="liveAlertPlaceholder"></div>
+                <button type="button" class="btn btn-success" (click)="alertS.success('Success live alert OK !')">
+                    live alert
+                </button>
+
+                <button type="button" class="btn btn-danger" (click)="alertS.danger('Danger live alert OK !')">
+                    live alert 2
+                </button>
+
             </div>
         </div>
         <div class="card-body text-center mt-3">
@@ -99,7 +95,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a *ngIf="(pinging$ | async) !== server.id" href="javascript:void(0)"
+                                    <a *ngIf="(pinging$ | async) !== server.id" href="javascript:"
                                         (click)="pingServer(server.id)"><i class="fa-solid fa-satellite-dish"></i></a>
                                     <div *ngIf="(pinging$ | async) == server.id" class="spinner-grow" role="status">
                                         <span class="visually-hidden">Loading...</span>
@@ -131,9 +127,6 @@
 
         </div>
     </div>
-    <!-- <div class="borderR">
-        <h3>Me Too!</h3>
-    </div> -->
 </div>
 
 
@@ -157,40 +150,3 @@
     </div>
 </div>
 
-
-<!-- 
-
-
-<button type="button" class="btn btn-link">Link</button>
-
-<div class="container mt-5 mx-auto">
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">First</th>
-                <th scope="col">Last</th>
-                <th scope="col">Handle</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <th scope="row">1</th>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>@mdo</td>
-            </tr>
-            <tr>
-                <th scope="row">2</th>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>@fat</td>
-            </tr>
-            <tr>
-                <th scope="row">3</th>
-                <td colspan="2">Larry the Bird</td>
-                <td>@twitter</td>
-            </tr>
-        </tbody>
-    </table>
-</div> -->

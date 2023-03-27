@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { BehaviorSubject, catchError, delay, map, Observable, of, startWith } from 'rxjs';
 import { ServerService } from '../core/services/apiService/server.service';
 import * as mod from '../core/models/models';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AlertService } from '../core/services/alertService/alert.service';
 
 @Component({
   selector: 'app-features',
@@ -21,8 +22,11 @@ export class FeaturesComponent implements OnInit {
   pinging: boolean = false;
   pingedServer: number = -1
 
+  // alert:AlertService = new AlertService();
+
   constructor(
-    private serverService: ServerService
+    private serverService: ServerService,
+    public alertS: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -66,6 +70,35 @@ export class FeaturesComponent implements OnInit {
   addNewServer() {
     console.log('ADDING new server');
 
+  }
+
+  @ViewChild('liveAlertPlaceholder') liveAlertPlaceholder;
+
+  // const alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+
+  // const alert = (message, type) => {
+  //   const wrapper = document.createElement('div')
+  //   wrapper.innerHTML = [
+  //     `<div class="alert alert-${type} alert-dismissible" role="alert">`,
+  //     `   <div>${message}</div>`,
+  //     '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+  //     '</div>'
+  //   ].join('')
+
+  //   alertPlaceholder.append(wrapper)
+  // }
+
+  // const alertTrigger = document.getElementById('liveAlertBtn')
+  // if(alertTrigger) {
+  //   alertTrigger.addEventListener('click', () => {
+  //     alert('Nice, you triggered this alert message!', 'success')
+  //   })
+  // }
+
+
+  triggerAlert = (type: string, message: string) => {
+    let temp: mod.Alert = { type, message }
+    this.alertS.trigger(temp);
   }
 
 }
