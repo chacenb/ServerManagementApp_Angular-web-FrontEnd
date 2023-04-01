@@ -98,6 +98,21 @@ export class FeaturesComponent implements OnInit {
 
   }
 
+  filterStatus: mod.Status = mod.Status.ALL;
+  filterServers(status: mod.Status) {
+    console.log("filterServers(status: mod.Status) ", status);
+    
+    this.appState$ = this.serverService.filter_by_status$(status, this.localDataSubj.value).pipe(
+      map((response) => {
+        return { dataState: mod.DataState.LOADED_STATE, appData: response };
+      }),
+      startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
+      catchError((error: HttpErrorResponse) => {
+        return of({ dataState: mod.DataState.ERROR_STATE, error: `${error}` });
+      }),
+    );
+  }
+
   start_PingSpinner = (ipAddress: string) => this.pingingSubj.next(ipAddress);
   stop_PingSpinner = () => this.pingingSubj.next('-1');
 

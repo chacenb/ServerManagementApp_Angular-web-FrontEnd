@@ -11,10 +11,12 @@
             <!-- top btns -->
             <div class="btnSpacing">
                 <div>
-                    <select class="form-select" aria-label="Default select example">
-                        <option selected>ALL</option>
-                        <option value="1">SERVER_UP</option>
-                        <option value="3">SERVER_DOWN</option>
+                    <!-- <select class="form-select" (ngModelChange)="filterServers($event)"> -->
+                    <select class="form-select"  [(ngModel)]="filterStatus" (ngModelChange)="filterServers($event)">
+                    <!-- <select class="form-select" (change)="filterServers($event)"> -->
+                        <option value="ALL" selected>ALL</option>
+                        <option value="SERVER_UP">SERVER UP</option>
+                        <option value="SERVER_DOWN">SERVER DOWN</option>
                     </select>
                 </div>
 

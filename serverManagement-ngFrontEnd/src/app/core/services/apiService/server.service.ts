@@ -56,15 +56,13 @@ export class ServerService {
    * @param response Data to filter
    * @returns an observable of filtered servers
   */
-  filter_by_status$ = (status: mod.Status, response: mod.CustomResponse): Observable<mod.CustomResponse> => new Observable<mod.CustomResponse>(
+  filter_by_status$ = (status: mod.Status, response: mod.CustomResponse) => new Observable<mod.CustomResponse>(
 
     /*  Observables should define a subscriber function that is executed when a consumer calls the subscribe() method. 
      * The subscriber function defines how to obtain/generate values to be published to the consumer.*/
     (subscriber) => {
 
-      console.log('[API] > filter_by_status$ > response to filter :', response);
-
-      // in this case, this Observavle synchronously delivers filtered servers, then complete
+      // in this case, this Observable synchronously delivers filtered servers, then complete
       subscriber.next(
         status === mod.Status.ALL ?
           { ...response, message: `servers filtered by ${status} status` } :
@@ -77,8 +75,8 @@ export class ServerService {
           }
       );
 
-      /* if errors during execution of subscriber function */
-      subscriber.error('Error occured when filtering data');
+      /* if errors during execution of subscriber function : NO subscriber.error() cause we control the result of the subscription manually*/
+      // subscriber.error('Error occured when filtering data');
 
       /* complete the execution */
       subscriber.complete();
