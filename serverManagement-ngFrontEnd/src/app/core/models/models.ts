@@ -1,3 +1,5 @@
+import { HttpErrorResponse } from "@angular/common/http"
+
 export interface Alert {
     type?: string,
     message?: string
@@ -24,7 +26,7 @@ export enum Status {
 export interface AppState<T> {
     dataState: DataState,
     appData?: T,
-    error?: string
+    error?: HttpErrorResponse
 }
 
 export interface CustomResponse {

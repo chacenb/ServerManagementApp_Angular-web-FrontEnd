@@ -55,7 +55,8 @@ export class FeaturesComponent implements OnInit {
       /* handle the error  */
       catchError((error: HttpErrorResponse) => {
         /* build an object of type AppState<CustomResponse> */
-        const tempErrState: mod.AppState<mod.CustomResponse> = { dataState: mod.DataState.ERROR_STATE, error: `${error.name} : ${error.message}` };
+        const tempErrState: mod.AppState<mod.CustomResponse> = { dataState: mod.DataState.ERROR_STATE, error };
+        // const tempErrState: mod.AppState<mod.CustomResponse> = { dataState: mod.DataState.ERROR_STATE, error: `${error.name} : ${error.message}` };
         return of(tempErrState);
       }),
 
@@ -89,7 +90,7 @@ export class FeaturesComponent implements OnInit {
       /* handle the error  */
       catchError((error: HttpErrorResponse) => {
         this.stop_PingSpinner();
-        return of({ dataState: mod.DataState.ERROR_STATE, error: `${error.name} : ${error.message}` });
+        return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
 
     );
@@ -99,16 +100,22 @@ export class FeaturesComponent implements OnInit {
   }
 
   filterStatus: mod.Status = mod.Status.ALL;
+
+  /* filtering using filter Observable : 100% WORKING */
+  /** this func calls the filter Observable and passes 
+   * the filter by which we want to filter and the data to be filtered 
+   * @param status the status by which data will be filtered
+   */
   filterServers(status: mod.Status) {
     console.log("filterServers(status: mod.Status) ", status);
-    
+
     this.appState$ = this.serverService.filter_by_status$(status, this.localDataSubj.value).pipe(
       map((response) => {
         return { dataState: mod.DataState.LOADED_STATE, appData: response };
       }),
       startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
       catchError((error: HttpErrorResponse) => {
-        return of({ dataState: mod.DataState.ERROR_STATE, error: `${error}` });
+        return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
     );
   }

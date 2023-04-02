@@ -223,3 +223,8 @@ export class xxxxx implements OnInit, OnDestroy{
         this.dataSubscription?.unsubscribe();
     }
 }
+
+<!--------------------------------------------------------------------->
+<!-- restfulapi http status codes explanations  -->
+<!--------------------------------------------------------------------->
+https://restfulapi.net/http-status-codes/
