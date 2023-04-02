@@ -23,6 +23,15 @@ export class FeaturesComponent implements OnInit {
   pinging: boolean = false;
   pingedServer: number = -1
 
+  whatIsImplementedInThisProject = {
+    id: 'functionnalitiesId',
+    functionnalities: [
+      { id: 1, title: 'API calls with a reactive approach', description: 'subscribing in the UI using the async pipe', },
+      { id: 2, title: 'Using Observables to filter data', description: '', },
+      { id: 3, title: 'Using custom pipe to filter data', description: '', },
+    ],
+  }
+
   // alert:AlertService = new AlertService();
 
   constructor(
