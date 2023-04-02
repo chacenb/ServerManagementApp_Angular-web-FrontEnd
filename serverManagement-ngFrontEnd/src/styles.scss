@@ -1,5 +1,20 @@
 /* You can add global styles to this file, and also import other style files */
 .selector-for-some-widget {
-    box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+.g_validateInput {
+  label {
+    font-weight: 600;
+    color: red;
   }
-  
+
+  input {
+    border-left: 5px solid red;
+  }
+
+  select {
+    border-left: 5px solid red;
+  }
+
+}

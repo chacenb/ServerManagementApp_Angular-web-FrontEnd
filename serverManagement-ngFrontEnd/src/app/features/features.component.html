@@ -85,9 +85,10 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a *ngIf="(pinging$ | async) !== server.ipAddress" href="javascript:"
-                                        (click)="pingServer(server.ipAddress)"><i
-                                            class="fa-solid fa-satellite-dish"></i></a>
+                                    <a *ngIf="(pinging$ | async) !== server.ipAddress" href="javascript:void(0)"
+                                        (click)="pingServer(server.ipAddress)">
+                                        <i class="fa-solid fa-satellite-dish"></i>
+                                    </a>
                                     <div *ngIf="(pinging$ | async) == server.ipAddress" class="spinner-grow"
                                         role="status">
                                         <span class="visually-hidden">Loading...</span>
@@ -142,15 +143,64 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Add new server</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                new server form here
+
+            <!-- form body -->
+            <div class="modal-body" [formGroup]="serverForm">
+                <div class="mb-3"
+                    [class.g_validateInput]="(serverForm.touched || ipAddress.touched) && ipAddress.invalid">
+                    <label for="serverIPAddress" class="form-label">IP Address</label>
+                    <input type="text" formControlName='ipAddress' class="form-control" id="serverIPAddress"
+                        placeholder="192.168.2.130">
+                </div>
+
+                <div class="mb-3" [class.g_validateInput]="(serverForm.touched || name.touched) && name.invalid">
+                    <label for="serverName" class="form-label">Server name</label>
+                    <input type="text" formControlName='name' class="form-control" id="serverName"
+                        placeholder="File Server #2">
+                </div>
+
+                <div class="row">
+                    <div class="mb-3  col-md-6"
+                        [class.g_validateInput]="(serverForm.touched || memory.touched) && memory.invalid">
+                        <label for="servermemory" class="form-label">Server memory size</label>
+                        <input type="text" formControlName='memory' class="form-control" id="servermemory"
+                            placeholder="32 GB">
+                    </div>
+
+                    <div class="mb-3  col-md-6"
+                        [class.g_validateInput]="(serverForm.touched || type.touched) && type.invalid">
+                        <label for="servertype" class="form-label">Server type </label>
+                        <input type="text" formControlName='type' class="form-control" id="servertype"
+                            placeholder="Ubuntu server">
+                    </div>
+
+                </div>
+
+
+                <div class="mb-3" [class.g_validateInput]="(serverForm.touched || status.touched) && status.invalid">
+                    <label for="serverstatus" class="form-label">Server status</label>
+                    <select class="form-select" id="serverstatus"
+                        formControlName='status'><!-- using custom pipe  : WORKING 100% -->
+                        <option [ngValue]="null">-- select status --</option>
+                        <option *ngFor="let item of StatusesArray" [ngValue]="item">{{item}}</option>
+                    </select>
+                </div>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" (click)="addNewServer()">Save changes</button>
+                <button type="button" #closeModalButton class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" (click)="addNewServer()"
+                    [ngClass]="{'disabled': serverForm.invalid || (savingServer$ | async) }">
+                    <div *ngIf="(savingServer$ | async) ;else notSaving">
+                        <span class="spinner-border spinner-border-sm" role="status"></span> &nbsp;
+                        <span class="">Saving server...</span>
+                    </div>
+                    <ng-template #notSaving>Save server</ng-template>
+
+                </button>
             </div>
         </div>
     </div>

@@ -1,9 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { BehaviorSubject, catchError, delay, map, Observable, of, startWith } from 'rxjs';
 import { ServerService } from '../core/services/apiService/server.service';
 import * as mod from '../core/models/models';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AlertService } from '../core/services/alertService/alert.service';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-features',
@@ -15,6 +16,7 @@ export class FeaturesComponent implements OnInit {
   appState$: Observable<mod.AppState<mod.CustomResponse>>;
   readonly dataStates = mod.DataState;
   readonly Statuses = mod.Status;
+  StatusesArray = Object.keys(this.Statuses).filter(status => status !== 'ALL');
 
   private localDataSubj = new BehaviorSubject<mod.CustomResponse>(null); // same as new ReplaySubject<boolean>(1);
   private pingingSubj = new BehaviorSubject<string>('-1'); // same as new ReplaySubject<boolean>(1);
@@ -26,9 +28,14 @@ export class FeaturesComponent implements OnInit {
   whatIsImplementedInThisProject = {
     id: 'functionnalitiesId',
     functionnalities: [
-      { id: 1, title: 'API calls with a reactive approach', description: 'subscribing in the UI using the async pipe', },
-      { id: 2, title: 'Using Observables to filter data', description: '', },
-      { id: 3, title: 'Using custom pipe to filter data', description: '', },
+      { title: 'API calls with a reactive approach', description: 'subscribing in the UI using the async pipe', },
+      { title: 'Using Observables to filter data', description: '', },
+      { title: 'Using custom pipe to filter data', description: '', },
+      { title: 'Reactive form IP.address Validators.pattern(xxxxx)', description: 'check if the user has entered a valid IP@ by using a validation pattern ', },
+      { title: 'Reactive form control set disabled = true in form declaration', description: '', },
+
+
+
     ],
   }
 
@@ -36,6 +43,7 @@ export class FeaturesComponent implements OnInit {
 
   constructor(
     private serverService: ServerService,
+    private formBuilder: FormBuilder,
     public alertS: AlertService
   ) { }
 
@@ -70,7 +78,28 @@ export class FeaturesComponent implements OnInit {
       }),
 
     );
+
+    this.initserverForm();
   }
+
+
+  serverForm: FormGroup = new FormGroup({});
+
+  initserverForm() {
+    this.serverForm = this.formBuilder.group({
+      ipAddress: [null, [Validators.required, Validators.pattern('(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)')]],
+      name: [null, [Validators.required]],
+      memory: [null, [Validators.required]],
+      type: [null, [Validators.required]],
+      status: [{ value: mod.Status.SERVER_DOWN, disabled: true }],
+    });
+  }
+
+  get ipAddress() { return this.serverForm.get('ipAddress'); }
+  get name() { return this.serverForm.get('name'); }
+  get memory() { return this.serverForm.get('memory'); }
+  get type() { return this.serverForm.get('type'); }
+  get status() { return this.serverForm.get('status'); }
 
 
   pingServer(ipAddress: string) {
@@ -133,9 +162,39 @@ export class FeaturesComponent implements OnInit {
   stop_PingSpinner = () => this.pingingSubj.next('-1');
 
 
-  addNewServer() {
-    console.log('ADDING new server');
 
+  private savingServerSubj = new BehaviorSubject<boolean>(false); // same as new ReplaySubject<boolean>(1);
+  savingServer$ = this.savingServerSubj.asObservable();
+
+  /* getting the close modal button of the UI via viewChild */
+  @ViewChild('closeModalButton') private UI_closeModalButton: ElementRef;
+
+  addNewServer() {
+    this.savingServerSubj.next(true);
+    this.appState$ = this.serverService.save_server$(this.serverForm.value).pipe(
+      map((response) => {
+        /* when new server is added we just update manually the local dataState with the newly created value got from the response */
+        let newlyCreatedServer = response.data.server
+        const updated_localData = { ...response, data: { servers: [newlyCreatedServer, ...this.localDataSubj.value.data.servers] } };
+        this.localDataSubj.next(updated_localData);
+
+        this.savingServerSubj.next(false);
+        this.UI_closeModalButton.nativeElement.click();
+        this.initserverForm();
+
+        return { dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value };
+        // return { dataState: mod.DataState.LOADED_STATE, appData: response };
+      }),
+      startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
+      catchError((error: HttpErrorResponse) => {
+
+        this.savingServerSubj.next(false);
+        // this.UI_closeModalButton.nativeElement.click();
+        // this.initserverForm();
+
+        return of({ dataState: mod.DataState.ERROR_STATE, error });
+      }),
+    );
   }
 
   @ViewChild('liveAlertPlaceholder') liveAlertPlaceholder;

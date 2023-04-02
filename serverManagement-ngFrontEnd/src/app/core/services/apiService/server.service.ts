@@ -35,7 +35,7 @@ export class ServerService {
 
   ping_server$ = (ipAddress: string) => this.http.get<mod.CustomResponse>(`${this.apiUrl}/ping/${ipAddress}`).pipe(
     retry(3),
-    tap((data) => { console.log('[API] > ping_server > tap :'); }),
+    tap((data) => { console.log('[API] > ping_server > tap :', data); }),
     catchError(this.handleError)
   );
 

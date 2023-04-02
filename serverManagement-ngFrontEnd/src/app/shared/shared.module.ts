@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FilterByStatusPipe } from './pipes/filterServerByStatus/filter-by-status.pipe';
 import { AlertComponent } from './components/alert/alert.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
 @NgModule({
@@ -12,11 +12,14 @@ import { FormsModule } from '@angular/forms';
   ],
   imports: [
     FormsModule,
+    ReactiveFormsModule,
     CommonModule
   ],
   exports: [
+    CommonModule,
     FilterByStatusPipe,
     FormsModule,
+    ReactiveFormsModule,
     AlertComponent
 
   ],
