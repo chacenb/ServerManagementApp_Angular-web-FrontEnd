@@ -16,7 +16,7 @@ import jsPDF from 'jspdf';
 export class FeaturesComponent implements OnInit {
 
   @ViewChild('addNewServerBtn') addNewServerBtn: ElementRef;
-  
+
 
   appState$: Observable<mod.AppState<mod.CustomResponse>>;
   readonly dataStates = mod.DataState;
@@ -230,7 +230,7 @@ export class FeaturesComponent implements OnInit {
   }
 
 
-  // @ViewChild('liveAlertPlaceholder') liveAlertPlaceholder;
+  @ViewChild('liveAlertPlaceholder') liveAlertPlaceholder;
 
   // const alertPlaceholder = document.getElementById('liveAlertPlaceholder')
 
@@ -283,17 +283,15 @@ export class FeaturesComponent implements OnInit {
 
 
   @ViewChild('content', { static: false }) el!: ElementRef;
-  
+
   makePdf() {
-    window.print();
-    //   let pdf = new jsPDF('landscape', "px",);
-    //   pdf.setFont("helvetica");
-    //   pdf.setFontSize(6);
-    //   pdf.html(this.UI_serversDataTable.nativeElement, {
-    //     callback: (pdf) => {
-    //       pdf.save("sample.pdf")
-    //     }
-    //   })
+    // window.print();
+    let pdf = new jsPDF('l', "pt");
+    pdf.html(this.UI_serversDataTable.nativeElement, {
+      callback: (pdf) => {
+        pdf.save("sample.pdf")
+      }
+    })
   }
 
 
