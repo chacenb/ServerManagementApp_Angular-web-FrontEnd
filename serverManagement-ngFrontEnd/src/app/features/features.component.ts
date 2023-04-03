@@ -230,7 +230,7 @@ export class FeaturesComponent implements OnInit {
   }
 
 
-  @ViewChild('liveAlertPlaceholder') liveAlertPlaceholder;
+  // @ViewChild('liveAlertPlaceholder') liveAlertPlaceholder;
 
   // const alertPlaceholder = document.getElementById('liveAlertPlaceholder')
 
