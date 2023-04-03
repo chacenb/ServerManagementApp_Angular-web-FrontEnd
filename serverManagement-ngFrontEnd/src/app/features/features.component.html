@@ -1,5 +1,4 @@
-<app-alert></app-alert>
-
+<div class="row"><app-alert></app-alert></div>
 <div class="row mt-5">
     <div class="card col-md-9 mx-auto ">
         <div class="card-header hh">
@@ -10,8 +9,8 @@
             <!-- top btns -->
             <div class="btnSpacing">
                 <div>
-                    <select class="form-select" [(ngModel)]="filterStatus"><!-- using custom pipe  : WORKING 100% -->
-                        <!-- <select class="form-select" [(ngModel)]="filterStatus" (ngModelChange)="filterServers($event)"> -->
+                    <!-- <select class="form-select" [(ngModel)]="filterStatus">using custom pipe  : WORKING 100% -->
+                    <select class="form-select" [(ngModel)]="filterStatus" (ngModelChange)="filterServers($event)">
                         <!-- using filter observable : WORKING 100% -->
                         <!-- <select class="form-select" (change)="filterServers($event)"> -->
                         <option value="ALL" selected>ALL</option>
@@ -20,12 +19,12 @@
                     </select>
                 </div>
 
-                <button type="button" class="btn btn-primary ml-2" data-bs-toggle="modal"
+                <button #addNewServerBtn type="button" class="btn btn-primary ml-2" data-bs-toggle="modal"
                     data-bs-target="#addNewServerModal"><i class="fa-solid fa-plus"></i>
                     &nbsp;New server
                 </button>
 
-                <button type="button" class="btn btn-warning ml-2">Print report</button>
+                <button type="button" class="btn btn-warning ml-2" (click)="makePdf()">Print report</button>
 
                 <div id="liveAlertPlaceholder"></div>
                 <button type="button" class="btn btn-success" (click)="alertS.success('Success live alert OK !')">
@@ -55,50 +54,60 @@
                 <ng-container *ngSwitchCase="dataStates.LOADED_STATE">
 
                     <!-- {{appState.appData.data.servers | json}} -->
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Id</th>
-                                <th scope="col">Image</th>
-                                <th scope="col">Ip Address</th>
-                                <th scope="col">Name</th>
-                                <th scope="col">Memory</th>
-                                <th scope="col">Type</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">Ping</th>
-                                <th scope="col">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr
-                                *ngFor="let server of appState.appData.data.servers | filterByStatus:filterStatus; let i = index">
-                                <th scope="row">#{{server.id}} </th>
-                                <td> <img [src]="server.imageUrl" [alt]="server.name" width="30" height="30"> </td>
-                                <td>{{server.ipAddress}}</td>
-                                <td>{{server.name}}</td>
-                                <td>{{server.memory}}</td>
-                                <td>{{server.type}}</td>
-                                <td>
-                                    <span class="badge"
-                                        [ngClass]="[server.status == Statuses.SERVER_DOWN ? 'bg-danger': 'bg-success ']">
-                                        {{(server.status===Statuses.SERVER_DOWN)?'SERVER DOWN': 'SERVER UP'}}
-                                    </span>
-                                </td>
-                                <td>
-                                    <a *ngIf="(pinging$ | async) !== server.ipAddress" href="javascript:void(0)"
-                                        (click)="pingServer(server.ipAddress)">
-                                        <i class="fa-solid fa-satellite-dish"></i>
-                                    </a>
-                                    <div *ngIf="(pinging$ | async) == server.ipAddress" class="spinner-grow"
-                                        role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                </td>
-                                <td><i class="fa-solid fa-trash text-danger"></i></td>
-                            </tr>
+                    <ng-container *ngIf="appState.appData.data.servers.length > 0 ;else noserverinDB">
+                        <table class="table" #serversDataTable>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Id</th>
+                                    <th scope="col">Image</th>
+                                    <th scope="col">Ip Address</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Memory</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Ping</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- <tr *ngFor="let server of appState.appData.data.servers | filterByStatus:filterStatus; let i = index"> -->
+                                <tr *ngFor="let server of appState.appData.data.servers ; let i = index">
+                                    <th scope="row">#{{server.id}} </th>
+                                    <td> <img [src]="server.imageUrl" [alt]="server.name" width="30" height="30"> </td>
+                                    <td>{{server.ipAddress}}</td>
+                                    <td>{{server.name}}</td>
+                                    <td>{{server.memory}}</td>
+                                    <td>{{server.type}}</td>
+                                    <td>
+                                        <span class="badge"
+                                            [ngClass]="[server.status == Statuses.SERVER_DOWN ? 'bg-danger': 'bg-success ']">
+                                            {{(server.status===Statuses.SERVER_DOWN)?'SERVER DOWN': 'SERVER UP'}}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a *ngIf="(pinging$ | async) !== server.ipAddress" href="javascript:void(0)"
+                                            (click)="pingServer(server.ipAddress)">
+                                            <i class="fa-solid fa-satellite-dish"></i>
+                                        </a>
+                                        <div *ngIf="(pinging$ | async) == server.ipAddress" class="spinner-grow"
+                                            role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </td>
+                                    <td><i role="button" class="fa-solid fa-trash text-danger "
+                                            (click)="deleteServer(server)"></i></td>
+                                </tr>
 
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </ng-container>
+
+                    <ng-template #noserverinDB>
+                        <div class="alert alert-info d-flex items-center gap-3" role="alert">
+                            <div><i class="fa-solid fa-circle-info"></i></div>
+                            <div>Aucun serveur en base, veuillez <a href="javascript:void(0)" (click)="addNewServerBtn.click()">rajouter un serveur</a> pour commencer</div>
+                        </div>
+                    </ng-template>
 
                 </ng-container>
 
@@ -205,3 +214,32 @@
         </div>
     </div>
 </div>
+
+
+
+<!-- 
+
+<div id="content" #content>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Country</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>John</td>
+                <td>23</td>
+                <td>New Zealand</td>
+            </tr>
+            <tr>
+                <td>Smith</td>
+                <td>24</td>
+                <td>Australia</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<button (click)="makePdf()">Generate PDF</button> -->

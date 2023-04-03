@@ -5,6 +5,8 @@ import * as mod from '../core/models/models';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AlertService } from '../core/services/alertService/alert.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+// declare let jsPDF;
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-features',
@@ -12,6 +14,9 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
   styleUrls: ['./features.component.scss']
 })
 export class FeaturesComponent implements OnInit {
+
+  @ViewChild('addNewServerBtn') addNewServerBtn: ElementRef;
+  
 
   appState$: Observable<mod.AppState<mod.CustomResponse>>;
   readonly dataStates = mod.DataState;
@@ -33,6 +38,7 @@ export class FeaturesComponent implements OnInit {
       { title: 'Using custom pipe to filter data', description: '', },
       { title: 'Reactive form IP.address Validators.pattern(xxxxx)', description: 'check if the user has entered a valid IP@ by using a validation pattern ', },
       { title: 'Reactive form control set disabled = true in form declaration', description: '', },
+      { title: 'Print table data into PDF : JSPDF library ', description: '', },
 
 
 
@@ -58,6 +64,7 @@ export class FeaturesComponent implements OnInit {
     this.appState$ = this.serverService.get_all_servers$().pipe(
 
       map((response) => {
+        this.alertS.success('Servers retrieved succesfully');
         /* save the response locally for future updates */
         this.localDataSubj.next(response);
 
@@ -71,6 +78,8 @@ export class FeaturesComponent implements OnInit {
 
       /* handle the error  */
       catchError((error: HttpErrorResponse) => {
+        this.alertS.danger('Error when fetching the data');
+
         /* build an object of type AppState<CustomResponse> */
         const tempErrState: mod.AppState<mod.CustomResponse> = { dataState: mod.DataState.ERROR_STATE, error };
         // const tempErrState: mod.AppState<mod.CustomResponse> = { dataState: mod.DataState.ERROR_STATE, error: `${error.name} : ${error.message}` };
@@ -91,7 +100,8 @@ export class FeaturesComponent implements OnInit {
       name: [null, [Validators.required]],
       memory: [null, [Validators.required]],
       type: [null, [Validators.required]],
-      status: [{ value: mod.Status.SERVER_DOWN, disabled: true }],
+      status: [mod.Status.SERVER_DOWN],
+      // status: [{ value: mod.Status.SERVER_DOWN, disabled: true }],
     });
   }
 
@@ -108,6 +118,7 @@ export class FeaturesComponent implements OnInit {
 
     this.appState$ = this.serverService.ping_server$(ipAddress).pipe(
       map((response) => {
+        this.alertS.success((response.data.server.status === this.Statuses.SERVER_UP) ? 'Server is up' : 'Server is down');
 
         /* from our local data previously saved, find the index of the server we are pinging ...*/
         const indexOfCurrServer = this.localDataSubj.value.data.servers.findIndex(server => server.id == response.data.server.id);
@@ -127,6 +138,7 @@ export class FeaturesComponent implements OnInit {
 
       /* handle the error  */
       catchError((error: HttpErrorResponse) => {
+        this.alertS.danger('Error when pinging the server');
         this.stop_PingSpinner();
         return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
@@ -145,14 +157,14 @@ export class FeaturesComponent implements OnInit {
    * @param status the status by which data will be filtered
    */
   filterServers(status: mod.Status) {
-    console.log("filterServers(status: mod.Status) ", status);
-
     this.appState$ = this.serverService.filter_by_status$(status, this.localDataSubj.value).pipe(
       map((response) => {
+        this.alertS.success(`Server filtered by ${status} status`);
         return { dataState: mod.DataState.LOADED_STATE, appData: response };
       }),
       startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
       catchError((error: HttpErrorResponse) => {
+        this.alertS.danger('Error when filtering servers');
         return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
     );
@@ -173,6 +185,7 @@ export class FeaturesComponent implements OnInit {
     this.savingServerSubj.next(true);
     this.appState$ = this.serverService.save_server$(this.serverForm.value).pipe(
       map((response) => {
+        this.alertS.success(`Server added successfully`);
         /* when new server is added we just update manually the local dataState with the newly created value got from the response */
         let newlyCreatedServer = response.data.server
         const updated_localData = { ...response, data: { servers: [newlyCreatedServer, ...this.localDataSubj.value.data.servers] } };
@@ -187,7 +200,7 @@ export class FeaturesComponent implements OnInit {
       }),
       startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
       catchError((error: HttpErrorResponse) => {
-
+        this.alertS.danger('Error when saving server');
         this.savingServerSubj.next(false);
         // this.UI_closeModalButton.nativeElement.click();
         // this.initserverForm();
@@ -196,6 +209,26 @@ export class FeaturesComponent implements OnInit {
       }),
     );
   }
+
+
+  deleteServer(server: mod.ServerData) {
+    this.appState$ = this.serverService.delete_server$(server.id).pipe(
+      map((response) => {
+        this.alertS.warning(`Server deleted successfully`);
+        this.localDataSubj.next(
+          /* spread Obj and override a specific property w/ new value */
+          { ...response, data: { servers: this.localDataSubj.value.data.servers.filter(s => s.id !== server.id) } }
+        );
+        return { dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value };
+      }),
+      startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
+      catchError((error: HttpErrorResponse) => {
+        this.alertS.danger('Error when deleting server');
+        return of({ dataState: mod.DataState.ERROR_STATE, error });
+      }),
+    );
+  }
+
 
   @ViewChild('liveAlertPlaceholder') liveAlertPlaceholder;
 
@@ -221,9 +254,47 @@ export class FeaturesComponent implements OnInit {
   // }
 
 
-  triggerAlert = (type: string, message: string) => {
-    let temp: mod.Alert = { type, message }
-    this.alertS.trigger(temp);
+  // triggerAlert = (type: string, message: string) => {
+  //   let temp: mod.Alert = { type, message }
+  //   this.alertS.trigger(temp);
+  // }
+
+  getBase64Image(img) {
+    var canvas = document.createElement("canvas");
+    console.log("image");
+    canvas.width = img.width;
+    canvas.height = img.height;
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    var dataURL = canvas.toDataURL("image/png");
+    return dataURL;
   }
+
+
+  /* getting the close modal button of the UI via viewChild */
+  @ViewChild('serversDataTable') private UI_serversDataTable: ElementRef;
+  downloadServers() {
+    // console.log("UI_serversDataTable", this.UI_serversDataTable.nativeElement.);
+
+    // let doc = new jsPDF();
+    // doc.autoTable({ html: this.UI_serversDataTable.nativeElement });
+    // doc.output('datauri', 'test.pdf');
+  }
+
+
+  @ViewChild('content', { static: false }) el!: ElementRef;
+  
+  makePdf() {
+    window.print();
+    //   let pdf = new jsPDF('landscape', "px",);
+    //   pdf.setFont("helvetica");
+    //   pdf.setFontSize(6);
+    //   pdf.html(this.UI_serversDataTable.nativeElement, {
+    //     callback: (pdf) => {
+    //       pdf.save("sample.pdf")
+    //     }
+    //   })
+  }
+
 
 }

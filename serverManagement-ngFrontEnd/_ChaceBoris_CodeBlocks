@@ -228,3 +228,8 @@ export class xxxxx implements OnInit, OnDestroy{
 <!-- restfulapi http status codes explanations  -->
 <!--------------------------------------------------------------------->
 https://restfulapi.net/http-status-codes/
+
+<!--------------------------------------------------------------------->
+<!-- print to pdf  -->
+<!--------------------------------------------------------------------->
+https://www.npmjs.com/package/jspdf/v/2.5.0

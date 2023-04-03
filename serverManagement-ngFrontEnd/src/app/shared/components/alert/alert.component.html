@@ -1,28 +1,15 @@
-<ng-container *ngIf="(triggerAlert$ | async) as alert">
-    <div class="alert fixed-bottom mx-3 rounded" *ngIf="(displayAlert$ | async) === true" [ngClass]="['alert-'+alert.type]" role="alert">
-        <!-- *ngIf="displayAlert$ | async"  -->
+<div *ngIf="(triggerAlert$ | async) as alert" class="alert-container">
+    <div class="alert rounded" *ngIf="(display$ | async)" [ngClass]="['alert-'+alert.type]" role="alert">
         {{alert.message}}
     </div>
-</ng-container>
+</div>
 
-<!-- <div class="alert alert-secondary" role="alert">
-    A simple secondary alert—check it out!
-  </div>
-  <div class="alert alert-success" role="alert">
-    A simple success alert—check it out!
-  </div>
-  <div class="alert alert-danger" role="alert">
-    A simple danger alert—check it out!
-  </div>
-  <div class="alert alert-warning" role="alert">
-    A simple warning alert—check it out!
-  </div>
-  <div class="alert alert-info" role="alert">
-    A simple info alert—check it out!
-  </div>
-  <div class="alert alert-light" role="alert">
-    A simple light alert—check it out!
-  </div>
-  <div class="alert alert-dark" role="alert">
-    A simple dark alert—check it out!
-  </div> -->
+<!-- types of alert -->
+<!-- alert-secondary
+alert-success
+alert-danger
+alert-warning
+alert-info
+alert-light
+alert-dark
+ -->

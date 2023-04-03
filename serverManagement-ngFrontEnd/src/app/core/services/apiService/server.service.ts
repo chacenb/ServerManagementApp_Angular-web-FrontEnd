@@ -44,7 +44,7 @@ export class ServerService {
     catchError(this.handleError)
   );
 
-  delete_server$ = (id: number) => this.http.delete<mod.CustomResponse>(`${this.apiUrl}/delete/${id}`).pipe(
+  delete_server$ = (serverId: number) => this.http.delete<mod.CustomResponse>(`${this.apiUrl}/delete/${serverId}`).pipe(
     tap((data) => { console.log('[API] > delete_server > tap :', data); }),
     catchError(this.handleError)
   );

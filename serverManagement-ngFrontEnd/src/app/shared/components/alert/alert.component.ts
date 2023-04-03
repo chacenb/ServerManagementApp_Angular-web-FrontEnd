@@ -39,38 +39,32 @@ import {
 })
 export class AlertComponent implements OnInit { /* , OnChanges */
 
-  alertData: Alert = {}
+  // alertData: Alert = {}
   triggerAlert$: Observable<Alert>;
-
-  private displayAlert_ = new BehaviorSubject<boolean>(false);
-  displayAlert$ = this.displayAlert_.asObservable();
 
   constructor(
     private alertService: AlertService
   ) { }
 
   ngOnInit(): void {
-    this.triggerAlert$ = this.alertService.displayAlert$.pipe(
+    this.triggerAlert$ = this.alertService.triggerAlert$.pipe(
       map((response) => {
         this.setVisible_startCountdown();
         return response
       }),
       startWith({})
     )
-
-    // this.displayAlert_.next(this.triggerAlert);
   }
 
-  // ngOnChanges(changes: SimpleChanges) {
-  //   console.log('changes', changes);
-  //   this.startCountdown();
-  // }
 
   visibleTimeoutId = null;
+  private display = new BehaviorSubject<boolean>(false);
+  display$ = this.display.asObservable();
+
   setVisible_startCountdown = () => {
-    this.displayAlert_.next(true);
+    this.display.next(true);
     if (this.visibleTimeoutId) clearTimeout(this.visibleTimeoutId);
-    this.visibleTimeoutId = setTimeout(() => { this.displayAlert_.next(false); }, 3000)
+    this.visibleTimeoutId = setTimeout(() => { this.display.next(false); }, 3000)
   };
 
 
