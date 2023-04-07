@@ -10,9 +10,6 @@ export class AlertService {
 
   constructor() { }
 
-  // trigger = (alertData: Alert) => { this.triggerAlert_.next(alertData); }
-  // trigger2 = (type: string, message: string) => { this.triggerAlert_.next({ type, message }); }
-
   success = (message: string) => { this.triggerAlert_.next({ type: 'success', message }); }
   danger = (message: string) => { this.triggerAlert_.next({ type: 'danger', message }); }
   warning = (message: string) => { this.triggerAlert_.next({ type: 'warning', message }); }

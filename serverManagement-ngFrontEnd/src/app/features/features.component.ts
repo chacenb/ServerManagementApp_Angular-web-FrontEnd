@@ -39,6 +39,7 @@ export class FeaturesComponent implements OnInit {
       { title: 'Reactive form IP.address Validators.pattern(xxxxx)', description: 'check if the user has entered a valid IP@ by using a validation pattern ', },
       { title: 'Reactive form control set disabled = true in form declaration', description: '', },
       { title: 'Print table data into PDF : JSPDF library ', description: '', },
+      { title: 'auto closable Alert on user actions  ', description: 'alert service + alert component autoclosable', },
 
 
 
@@ -64,7 +65,7 @@ export class FeaturesComponent implements OnInit {
     this.appState$ = this.serverService.get_all_servers$().pipe(
 
       map((response) => {
-        this.alertS.success('Servers retrieved succesfully');
+        this.alert('Servers retrieved succesfully');
         /* save the response locally for future updates */
         this.localDataSubj.next(response);
 
@@ -78,7 +79,7 @@ export class FeaturesComponent implements OnInit {
 
       /* handle the error  */
       catchError((error: HttpErrorResponse) => {
-        this.alertS.danger('Error when fetching the data');
+        this.alert('Error when fetching the data', 'danger');
 
         /* build an object of type AppState<CustomResponse> */
         const tempErrState: mod.AppState<mod.CustomResponse> = { dataState: mod.DataState.ERROR_STATE, error };
@@ -118,7 +119,7 @@ export class FeaturesComponent implements OnInit {
 
     this.appState$ = this.serverService.ping_server$(ipAddress).pipe(
       map((response) => {
-        this.alertS.success((response.data.server.status === this.Statuses.SERVER_UP) ? 'Server is up' : 'Server is down');
+        const alert = (response.data.server.status === this.Statuses.SERVER_UP) ? this.alert('Server is up') : this.alert('Server is down', 'warning');
 
         /* from our local data previously saved, find the index of the server we are pinging ...*/
         const indexOfCurrServer = this.localDataSubj.value.data.servers.findIndex(server => server.id == response.data.server.id);
@@ -138,7 +139,7 @@ export class FeaturesComponent implements OnInit {
 
       /* handle the error  */
       catchError((error: HttpErrorResponse) => {
-        this.alertS.danger('Error when pinging the server');
+        this.alert('Error when pinging the server', 'danger');
         this.stop_PingSpinner();
         return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
@@ -159,12 +160,12 @@ export class FeaturesComponent implements OnInit {
   filterServers(status: mod.Status) {
     this.appState$ = this.serverService.filter_by_status$(status, this.localDataSubj.value).pipe(
       map((response) => {
-        this.alertS.success(`Server filtered by ${status} status`);
+        this.alert(`Server filtered by ${status} status`);
         return { dataState: mod.DataState.LOADED_STATE, appData: response };
       }),
       startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
       catchError((error: HttpErrorResponse) => {
-        this.alertS.danger('Error when filtering servers');
+        this.alert('Error when filtering servers', 'danger');
         return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
     );
@@ -172,8 +173,6 @@ export class FeaturesComponent implements OnInit {
 
   start_PingSpinner = (ipAddress: string) => this.pingingSubj.next(ipAddress);
   stop_PingSpinner = () => this.pingingSubj.next('-1');
-
-
 
   private savingServerSubj = new BehaviorSubject<boolean>(false); // same as new ReplaySubject<boolean>(1);
   savingServer$ = this.savingServerSubj.asObservable();
@@ -185,7 +184,7 @@ export class FeaturesComponent implements OnInit {
     this.savingServerSubj.next(true);
     this.appState$ = this.serverService.save_server$(this.serverForm.value).pipe(
       map((response) => {
-        this.alertS.success(`Server added successfully`);
+        this.alert(`Server added successfully`);
         /* when new server is added we just update manually the local dataState with the newly created value got from the response */
         let newlyCreatedServer = response.data.server
         const updated_localData = { ...response, data: { servers: [newlyCreatedServer, ...this.localDataSubj.value.data.servers] } };
@@ -200,11 +199,8 @@ export class FeaturesComponent implements OnInit {
       }),
       startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
       catchError((error: HttpErrorResponse) => {
-        this.alertS.danger('Error when saving server');
+        this.alert('Error when saving server', 'danger');
         this.savingServerSubj.next(false);
-        // this.UI_closeModalButton.nativeElement.click();
-        // this.initserverForm();
-
         return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
     );
@@ -214,7 +210,7 @@ export class FeaturesComponent implements OnInit {
   deleteServer(server: mod.ServerData) {
     this.appState$ = this.serverService.delete_server$(server.id).pipe(
       map((response) => {
-        this.alertS.warning(`Server deleted successfully`);
+        this.alert(`Server deleted successfully`,'warning');
         this.localDataSubj.next(
           /* spread Obj and override a specific property w/ new value */
           { ...response, data: { servers: this.localDataSubj.value.data.servers.filter(s => s.id !== server.id) } }
@@ -223,7 +219,7 @@ export class FeaturesComponent implements OnInit {
       }),
       startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
       catchError((error: HttpErrorResponse) => {
-        this.alertS.danger('Error when deleting server');
+        this.alert('Error when deleting server', 'danger');
         return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
     );
@@ -232,43 +228,16 @@ export class FeaturesComponent implements OnInit {
 
   @ViewChild('liveAlertPlaceholder') liveAlertPlaceholder;
 
-  // const alertPlaceholder = document.getElementById('liveAlertPlaceholder')
-
-  // const alert = (message, type) => {
-  //   const wrapper = document.createElement('div')
-  //   wrapper.innerHTML = [
-  //     `<div class="alert alert-${type} alert-dismissible" role="alert">`,
-  //     `   <div>${message}</div>`,
-  //     '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-  //     '</div>'
-  //   ].join('')
-
-  //   alertPlaceholder.append(wrapper)
+  // getBase64Image(img) {
+  //   var canvas = document.createElement("canvas");
+  //   console.log("image");
+  //   canvas.width = img.width;
+  //   canvas.height = img.height;
+  //   var ctx = canvas.getContext("2d");
+  //   ctx.drawImage(img, 0, 0);
+  //   var dataURL = canvas.toDataURL("image/png");
+  //   return dataURL;
   // }
-
-  // const alertTrigger = document.getElementById('liveAlertBtn')
-  // if(alertTrigger) {
-  //   alertTrigger.addEventListener('click', () => {
-  //     alert('Nice, you triggered this alert message!', 'success')
-  //   })
-  // }
-
-
-  // triggerAlert = (type: string, message: string) => {
-  //   let temp: mod.Alert = { type, message }
-  //   this.alertS.trigger(temp);
-  // }
-
-  getBase64Image(img) {
-    var canvas = document.createElement("canvas");
-    console.log("image");
-    canvas.width = img.width;
-    canvas.height = img.height;
-    var ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0);
-    var dataURL = canvas.toDataURL("image/png");
-    return dataURL;
-  }
 
 
   /* getting the close modal button of the UI via viewChild */
@@ -294,5 +263,12 @@ export class FeaturesComponent implements OnInit {
     })
   }
 
+  alert = (message: string = 'default alert message', type?: string) => {
+    switch (type) {
+      case 'danger': this.alertS.danger(message); break;
+      case 'warning': this.alertS.warning(message); break;
+      default: this.alertS.success(message); break;
+    }
+  }
 
 }
