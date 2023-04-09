@@ -24,7 +24,16 @@
                     &nbsp;New server
                 </button>
 
-                <button type="button" class="btn btn-warning ml-2" (click)="makePdf()">Print report</button>
+                <div class="dropdown">
+                    <button class="btn btn-warning ml-2 dropdown-toggle" type="button" id="printFormats" data-bs-toggle="dropdown" aria-expanded="false">
+                        Print to ...
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="printFormats">
+                        <li><a class="dropdown-item" href="#" (click)="exportToPDF()">PDF</a></li>
+                        <li><a class="dropdown-item" href="#" (click)="exportToEXCEL()">EXCEL</a></li>
+                        <li><a class="dropdown-item text-muted">CSV</a></li>
+                    </ul>
+                </div>
 
             </div>
         </div>
@@ -46,7 +55,7 @@
 
                     <!-- {{appState.appData.data.servers | json}} -->
                     <ng-container *ngIf="appState.appData.data.servers.length > 0 ;else noserverinDB">
-                        <table class="table" #serversDataTable>
+                        <table class="table" id="serversDataTable" #serversDataTable>
                             <thead>
                                 <tr>
                                     <th scope="col">Id</th>
@@ -85,8 +94,12 @@
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     </td>
-                                    <td><i role="button" class="fa-solid fa-trash text-danger "
-                                            (click)="deleteServer(server)"></i></td>
+                                    <td>
+                                        <div>
+                                            <i role="button" class="fas fa-pen  px-2" (click)="onEditServer(server)"></i>
+                                            <i role="button" class="fa-solid fa-trash text-danger px-2" (click)="deleteServer(server)"></i>
+                                        </div>
+                                    </td>
                                 </tr>
 
                             </tbody>
@@ -96,7 +109,8 @@
                     <ng-template #noserverinDB>
                         <div class="alert alert-info d-flex items-center gap-3" role="alert">
                             <div><i class="fa-solid fa-circle-info"></i></div>
-                            <div>Aucun serveur en base, veuillez <a href="javascript:void(0)" (click)="addNewServerBtn.click()">rajouter un serveur</a> pour commencer</div>
+                            <div>Aucun serveur en base, veuillez <a href="javascript:void(0)"
+                                    (click)="addNewServerBtn.click()">rajouter un serveur</a> pour commencer</div>
                         </div>
                     </ng-template>
 
@@ -205,32 +219,3 @@
         </div>
     </div>
 </div>
-
-
-
-<!-- 
-
-<div id="content" #content>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Country</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>John</td>
-                <td>23</td>
-                <td>New Zealand</td>
-            </tr>
-            <tr>
-                <td>Smith</td>
-                <td>24</td>
-                <td>Australia</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-<button (click)="makePdf()">Generate PDF</button> -->

@@ -5,8 +5,7 @@ import * as mod from '../core/models/models';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AlertService } from '../core/services/alertService/alert.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-// declare let jsPDF;
-import jsPDF from 'jspdf';
+import { PrinterService } from '../core/services/utilsService/printerService/printer.service';
 
 @Component({
   selector: 'app-features',
@@ -15,7 +14,6 @@ import jsPDF from 'jspdf';
 })
 export class FeaturesComponent implements OnInit {
 
-  @ViewChild('addNewServerBtn') addNewServerBtn: ElementRef;
 
 
   appState$: Observable<mod.AppState<mod.CustomResponse>>;
@@ -33,25 +31,23 @@ export class FeaturesComponent implements OnInit {
   whatIsImplementedInThisProject = {
     id: 'functionnalitiesId',
     functionnalities: [
-      { title: 'API calls with a reactive approach', description: 'subscribing in the UI using the async pipe', },
-      { title: 'Using Observables to filter data', description: '', },
-      { title: 'Using custom pipe to filter data', description: '', },
+      { title: 'Reactive approach for API calls ', description: 'Piping in the .ts file for the logic && subscribing in the UI using the async pipe', },
+      { title: 'data filtering using @2 METHODS : OBSERVABLE && CUSTOM PIPE', description: '', },
       { title: 'Reactive form IP.address Validators.pattern(xxxxx)', description: 'check if the user has entered a valid IP@ by using a validation pattern ', },
-      { title: 'Reactive form control set disabled = true in form declaration', description: '', },
-      { title: 'Print table data into PDF : JSPDF library ', description: '', },
-      { title: 'auto closable Alert on user actions  ', description: 'alert service + alert component autoclosable', },
+      { title: 'Reactive form control set disabled = true in form declaration', description: 'Setting a reactive form control disbled status to true/false from .ts file ', },
+      { title: 'Custom Printer Service : to PDF (jsPDF) && to EXCEL (XLSX)', description: 'Using jsPDF [XLSX] package to Print data to PDF [EXCEL] format', },
+      { title: 'Custom Alert Service + Alert component triggered on user actions  ', description: 'Shared Alert service + alert component subscribed to Alert service', },
 
 
 
     ],
   }
 
-  // alert:AlertService = new AlertService();
-
   constructor(
     private serverService: ServerService,
     private formBuilder: FormBuilder,
-    public alertS: AlertService
+    public alertS: AlertService,
+    private printer: PrinterService,
   ) { }
 
   ngOnInit(): void {
@@ -65,7 +61,7 @@ export class FeaturesComponent implements OnInit {
     this.appState$ = this.serverService.get_all_servers$().pipe(
 
       map((response) => {
-        this.alert('Servers retrieved succesfully');
+        this.alertS.success('Servers retrieved succesfully');
         /* save the response locally for future updates */
         this.localDataSubj.next(response);
 
@@ -79,7 +75,7 @@ export class FeaturesComponent implements OnInit {
 
       /* handle the error  */
       catchError((error: HttpErrorResponse) => {
-        this.alert('Error when fetching the data', 'danger');
+        this.alertS.danger('Error when fetching the data');
 
         /* build an object of type AppState<CustomResponse> */
         const tempErrState: mod.AppState<mod.CustomResponse> = { dataState: mod.DataState.ERROR_STATE, error };
@@ -119,7 +115,7 @@ export class FeaturesComponent implements OnInit {
 
     this.appState$ = this.serverService.ping_server$(ipAddress).pipe(
       map((response) => {
-        const alert = (response.data.server.status === this.Statuses.SERVER_UP) ? this.alert('Server is up') : this.alert('Server is down', 'warning');
+        const alert = (response.data.server.status === this.Statuses.SERVER_UP) ? this.alertS.success('Server is up') : this.alertS.warning('Server is down');
 
         /* from our local data previously saved, find the index of the server we are pinging ...*/
         const indexOfCurrServer = this.localDataSubj.value.data.servers.findIndex(server => server.id == response.data.server.id);
@@ -139,7 +135,7 @@ export class FeaturesComponent implements OnInit {
 
       /* handle the error  */
       catchError((error: HttpErrorResponse) => {
-        this.alert('Error when pinging the server', 'danger');
+        this.alertS.danger('Error when pinging the server');
         this.stop_PingSpinner();
         return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
@@ -160,12 +156,12 @@ export class FeaturesComponent implements OnInit {
   filterServers(status: mod.Status) {
     this.appState$ = this.serverService.filter_by_status$(status, this.localDataSubj.value).pipe(
       map((response) => {
-        this.alert(`Server filtered by ${status} status`);
+        this.alertS.success(`Server filtered by ${status} status`);
         return { dataState: mod.DataState.LOADED_STATE, appData: response };
       }),
       startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
       catchError((error: HttpErrorResponse) => {
-        this.alert('Error when filtering servers', 'danger');
+        this.alertS.danger('Error when filtering servers');
         return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
     );
@@ -184,7 +180,7 @@ export class FeaturesComponent implements OnInit {
     this.savingServerSubj.next(true);
     this.appState$ = this.serverService.save_server$(this.serverForm.value).pipe(
       map((response) => {
-        this.alert(`Server added successfully`);
+        this.alertS.success(`Server added successfully`);
         /* when new server is added we just update manually the local dataState with the newly created value got from the response */
         let newlyCreatedServer = response.data.server
         const updated_localData = { ...response, data: { servers: [newlyCreatedServer, ...this.localDataSubj.value.data.servers] } };
@@ -195,22 +191,70 @@ export class FeaturesComponent implements OnInit {
         this.initserverForm();
 
         return { dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value };
-        // return { dataState: mod.DataState.LOADED_STATE, appData: response };
       }),
       startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
       catchError((error: HttpErrorResponse) => {
-        this.alert('Error when saving server', 'danger');
+        this.alertS.danger('Error when saving server');
         this.savingServerSubj.next(false);
         return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
     );
   }
 
+  timeOutDisplay = null;
+  @ViewChild('addNewServerBtn') UI_openModalButton: ElementRef;
+
+  onEditServer(server) {
+    console.log(server);
+    this.prefillServerInfosIntoForm(server);
+    this.UI_openModalButton.nativeElement.click();
+
+    this.savingServerSubj.next(true);
+    /* NO UPDATE FUNCTIONNALITY IMPLEMENTED */
+    // this.appState$ = this.serverService.save_server$(this.serverForm.value).pipe(
+    // this.appState$ = this.serverService. .pipe(
+    //   map((response) => {
+    //     this.alertS.success(`Server added successfully`);
+    //     /* when new server is added we just update manually the local dataState with the newly created value got from the response */
+    //     let newlyCreatedServer = response.data.server
+    //     const updated_localData = { ...response, data: { servers: [newlyCreatedServer, ...this.localDataSubj.value.data.servers] } };
+    //     this.localDataSubj.next(updated_localData);
+
+    //     this.savingServerSubj.next(false);
+    //     this.UI_closeModalButton.nativeElement.click();
+    //     this.initserverForm();
+
+    //     return { dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value };
+    //   }),
+    //   startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
+    //   catchError((error: HttpErrorResponse) => {
+    //     this.alertS.danger('Error when saving server');
+    //     this.savingServerSubj.next(false);
+    //     return of({ dataState: mod.DataState.ERROR_STATE, error });
+    //   }),
+    // );
+
+    this.timeOutDisplay = setTimeout(() => {
+      this.savingServerSubj.next(false);
+      if (!!this.timeOutDisplay) clearTimeout(this.timeOutDisplay);
+    }, 3000);
+
+
+
+  }
+
+  prefillServerInfosIntoForm(serverToUpdate: mod.ServerData) {
+    this.ipAddress.setValue(serverToUpdate.ipAddress)
+    this.name.setValue(serverToUpdate.name)
+    this.memory.setValue(serverToUpdate.memory)
+    this.type.setValue(serverToUpdate.type)
+    this.status.setValue(serverToUpdate.status)
+  }
 
   deleteServer(server: mod.ServerData) {
     this.appState$ = this.serverService.delete_server$(server.id).pipe(
       map((response) => {
-        this.alert(`Server deleted successfully`,'warning');
+        this.alertS.warning(`Server deleted successfully`);
         this.localDataSubj.next(
           /* spread Obj and override a specific property w/ new value */
           { ...response, data: { servers: this.localDataSubj.value.data.servers.filter(s => s.id !== server.id) } }
@@ -219,56 +263,15 @@ export class FeaturesComponent implements OnInit {
       }),
       startWith({ dataState: mod.DataState.LOADED_STATE, appData: this.localDataSubj.value }),
       catchError((error: HttpErrorResponse) => {
-        this.alert('Error when deleting server', 'danger');
+        this.alertS.danger('Error when deleting server');
         return of({ dataState: mod.DataState.ERROR_STATE, error });
       }),
     );
   }
 
-
-  @ViewChild('liveAlertPlaceholder') liveAlertPlaceholder;
-
-  // getBase64Image(img) {
-  //   var canvas = document.createElement("canvas");
-  //   console.log("image");
-  //   canvas.width = img.width;
-  //   canvas.height = img.height;
-  //   var ctx = canvas.getContext("2d");
-  //   ctx.drawImage(img, 0, 0);
-  //   var dataURL = canvas.toDataURL("image/png");
-  //   return dataURL;
-  // }
-
-
-  /* getting the close modal button of the UI via viewChild */
-  @ViewChild('serversDataTable') private UI_serversDataTable: ElementRef;
-  downloadServers() {
-    // console.log("UI_serversDataTable", this.UI_serversDataTable.nativeElement.);
-
-    // let doc = new jsPDF();
-    // doc.autoTable({ html: this.UI_serversDataTable.nativeElement });
-    // doc.output('datauri', 'test.pdf');
-  }
-
-
-  @ViewChild('content', { static: false }) el!: ElementRef;
-
-  makePdf() {
-    // window.print();
-    let pdf = new jsPDF('l', "pt");
-    pdf.html(this.UI_serversDataTable.nativeElement, {
-      callback: (pdf) => {
-        pdf.save("sample.pdf")
-      }
-    })
-  }
-
-  alert = (message: string = 'default alert message', type?: string) => {
-    switch (type) {
-      case 'danger': this.alertS.danger(message); break;
-      case 'warning': this.alertS.warning(message); break;
-      default: this.alertS.success(message); break;
-    }
-  }
+  @ViewChild('serversDataTable', { static: false }) private serversDataTable: ElementRef;
+  filename: string = `serversList`;
+  exportToPDF = () => { this.printer.printToPDF(this.serversDataTable.nativeElement, `${this.filename}.pdf`); }
+  exportToEXCEL = () => { this.printer.printToEXCEL(this.serversDataTable.nativeElement, `${this.filename}.xlsx`); }
 
 }

@@ -3,8 +3,8 @@ import { HttpErrorResponse } from "@angular/common/http"
 export interface Alert {
     type?: string,
     message?: string
-  }
-  
+}
+
 
 
 /* ******************* ENUMS *********************** */
@@ -44,11 +44,11 @@ export interface CustomResponse {
 
 export interface ServerData {
     id?: number,
-    ipAddress: string,
-    name: string,
-    memory: string,
-    type: string,
     imageUrl?: string,
+    ipAddress: string,
+    memory: string,
+    name: string,
     status: Status
+    type: string,
 }
 
