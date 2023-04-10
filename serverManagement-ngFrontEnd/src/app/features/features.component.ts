@@ -201,15 +201,16 @@ export class FeaturesComponent implements OnInit {
     );
   }
 
-  timeOutDisplay = null;
-  @ViewChild('addNewServerBtn') UI_openModalButton: ElementRef;
 
+
+  @ViewChild('toggleUpdatePanel') UI_toggleUpdatePanel: ElementRef;
   onEditServer(server) {
-    console.log(server);
+    console.log('server to update is ', server);
     this.prefillServerInfosIntoForm(server);
-    this.UI_openModalButton.nativeElement.click();
+    this.UI_toggleUpdatePanel.nativeElement.click();
 
-    this.savingServerSubj.next(true);
+    // this.savingServerSubj.next(true);
+
     /* NO UPDATE FUNCTIONNALITY IMPLEMENTED */
     // this.appState$ = this.serverService.save_server$(this.serverForm.value).pipe(
     // this.appState$ = this.serverService. .pipe(
@@ -234,10 +235,10 @@ export class FeaturesComponent implements OnInit {
     //   }),
     // );
 
-    this.timeOutDisplay = setTimeout(() => {
-      this.savingServerSubj.next(false);
-      if (!!this.timeOutDisplay) clearTimeout(this.timeOutDisplay);
-    }, 3000);
+    // this.timeOutDisplay = setTimeout(() => {
+    //   this.savingServerSubj.next(false);
+    //   if (!!this.timeOutDisplay) clearTimeout(this.timeOutDisplay);
+    // }, 3000);
 
 
 
@@ -249,6 +250,23 @@ export class FeaturesComponent implements OnInit {
     this.memory.setValue(serverToUpdate.memory)
     this.type.setValue(serverToUpdate.type)
     this.status.setValue(serverToUpdate.status)
+  }
+
+  timeOutDisplay = null;
+
+  private updatingServerSubj = new BehaviorSubject<boolean>(false); // same as new ReplaySubject<boolean>(1);
+  updatingServer$ = this.updatingServerSubj.asObservable();
+
+  updateServer() {
+    console.log('updating server w/ values ', this.serverForm);
+
+    this.updatingServerSubj.next(true);
+    this.timeOutDisplay = setTimeout(() => {
+      this.updatingServerSubj.next(false);
+      if (!!this.timeOutDisplay) clearTimeout(this.timeOutDisplay);
+    }, 3000);
+
+
   }
 
   deleteServer(server: mod.ServerData) {

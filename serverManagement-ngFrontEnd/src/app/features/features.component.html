@@ -9,13 +9,13 @@
             <!-- top btns -->
             <div class="btnSpacing">
                 <div>
-                    <!-- <select class="form-select" [(ngModel)]="filterStatus">using custom pipe  : WORKING 100% -->
-                    <select class="form-select" [(ngModel)]="filterStatus" (ngModelChange)="filterServers($event)">
-                        <!-- using filter observable : WORKING 100% -->
+                    <!-- <select class="form-select" [(ngModel)]="filterStatus"> using custom pipe  : WORKING 100% -->
+                    <select class="form-select" [(ngModel)]="filterStatus" (ngModelChange)="filterServers($event)"> <!-- using filter observable : WORKING 100% -->
                         <!-- <select class="form-select" (change)="filterServers($event)"> -->
                         <option value="ALL" selected>ALL</option>
-                        <option value="SERVER_UP">SERVER UP</option>
-                        <option value="SERVER_DOWN">SERVER DOWN</option>
+                        <option *ngFor="let item of StatusesArray" [ngValue]="item">
+                            {{(item == 'SERVER_DOWN') ? 'SERVER DOWN' : 'SERVER UP'}}
+                        </option>
                     </select>
                 </div>
 
@@ -25,7 +25,8 @@
                 </button>
 
                 <div class="dropdown">
-                    <button class="btn btn-warning ml-2 dropdown-toggle" type="button" id="printFormats" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-warning ml-2 dropdown-toggle" type="button" id="printFormats"
+                        data-bs-toggle="dropdown" aria-expanded="false">
                         Print to ...
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="printFormats">
@@ -96,8 +97,12 @@
                                     </td>
                                     <td>
                                         <div>
-                                            <i role="button" class="fas fa-pen  px-2" (click)="onEditServer(server)"></i>
-                                            <i role="button" class="fa-solid fa-trash text-danger px-2" (click)="deleteServer(server)"></i>
+                                            <a href="javascript:void(0)"><i role="button" class="fas fa-pen px-2"
+                                                    (click)="onEditServer(server)"></i></a>
+                                            <span class="d-none" #toggleUpdatePanel data-bs-toggle="offcanvas"
+                                                data-bs-target="#offcanvasRight" aria-controls="offcanvasRight"></span>
+                                            <i role="button" class="fa-solid fa-trash text-danger px-2"
+                                                (click)="deleteServer(server)"></i>
                                         </div>
                                     </td>
                                 </tr>
@@ -151,7 +156,6 @@
 </div>
 
 
-
 <!-- Modal for adding new servers -->
 <div class="modal fade" id="addNewServerModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -199,7 +203,8 @@
                     <select class="form-select" id="serverstatus"
                         formControlName='status'><!-- using custom pipe  : WORKING 100% -->
                         <option [ngValue]="null">-- select status --</option>
-                        <option *ngFor="let item of StatusesArray" [ngValue]="item">{{item}}</option>
+                        <option *ngFor="let item of StatusesArray" [ngValue]="item">{{(item == 'SERVER_DOWN') ? 'SERVER
+                            DOWN' : 'SERVER UP'}}</option>
                     </select>
                 </div>
             </div>
@@ -216,6 +221,65 @@
 
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Right slider for updating servers -->
+<div class="offcanvas offcanvas-end w-50" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel"
+    data-bs-scroll="true">
+    <div class=" shadow rightSliderHeader">
+        <div class="close_title">
+            <button type="button" class="btn-close text-reset d-inline" data-bs-dismiss="offcanvas"
+                aria-label="Close"></button> &nbsp; &nbsp;
+            <h5 id="offcanvasRightLabel" class="d-inline pt-2">Update server</h5>
+        </div>
+        <button type="button" class="btn btn-primary" (click)="updateServer()"
+            [ngClass]="{'disabled': serverForm.invalid || (updatingServer$ | async) }">
+            <ng-container *ngIf="(updatingServer$ | async) ; else notUpdating">
+                <span class="spinner-border spinner-border-sm" role="status"></span> &nbsp;
+                <span class="">Updating ...</span>
+            </ng-container>
+            <ng-template #notUpdating>Update</ng-template>
+        </button>
+    </div>
+    <div class="offcanvas-body" [formGroup]="serverForm">
+        <div class="mb-3" [class.g_validateInput]="(serverForm.touched || ipAddress.touched) && ipAddress.invalid">
+            <label for="serverIPAddress" class="form-label">IP Address</label>
+            <input type="text" formControlName='ipAddress' class="form-control" id="serverIPAddress"
+                placeholder="192.168.2.130">
+        </div>
+
+        <div class="mb-3" [class.g_validateInput]="(serverForm.touched || name.touched) && name.invalid">
+            <label for="serverName" class="form-label">Server name</label>
+            <input type="text" formControlName='name' class="form-control" id="serverName" placeholder="File Server #2">
+        </div>
+
+        <div class="row">
+            <div class="mb-3  col-md-6"
+                [class.g_validateInput]="(serverForm.touched || memory.touched) && memory.invalid">
+                <label for="servermemory" class="form-label">Server memory size</label>
+                <input type="text" formControlName='memory' class="form-control" id="servermemory" placeholder="32 GB">
+            </div>
+
+            <div class="mb-3  col-md-6" [class.g_validateInput]="(serverForm.touched || type.touched) && type.invalid">
+                <label for="servertype" class="form-label">Server type </label>
+                <input type="text" formControlName='type' class="form-control" id="servertype"
+                    placeholder="Ubuntu server">
+            </div>
+
+        </div>
+
+
+        <div class="mb-3" [class.g_validateInput]="(serverForm.touched || status.touched) && status.invalid">
+            <label for="serverstatus" class="form-label">Server status</label>
+            <select class="form-select" id="serverstatus"
+                formControlName='status'><!-- using custom pipe  : WORKING 100% -->
+                <option [ngValue]="null">-- select status --</option>
+                <option *ngFor="let item of StatusesArray" [ngValue]="item">{{(item == 'SERVER_DOWN') ? 'SERVER DOWN' :
+                    'SERVER UP'}}</option>
+            </select>
         </div>
     </div>
 </div>

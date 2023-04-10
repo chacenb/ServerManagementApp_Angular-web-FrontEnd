@@ -29,3 +29,21 @@
     // max-width: 842px;
     // height: 595px;
 }
+
+.offcanvas{
+    // width:40% !important;
+} 
+
+.rightSliderHeader{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem 0.6rem 1rem;
+}
+
+.rightSliderHeader .close_title{
+    display: flex;
+    align-items: center;
+    // justify-content: space-between;
+    // padding: 0.6rem 1rem 0.6rem 1rem;
+}
